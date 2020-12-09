@@ -1,5 +1,5 @@
 fs = require("fs");
-fs.readFile("./data/input_day1.txt", "utf-8", (err, data) => {
+fs.readFile("./data/input_day1a.txt", "utf-8", (err, data) => {
   if (err) console.log(err);
   else {
     let nums = data.split("\n").map((n) => Number(n));
