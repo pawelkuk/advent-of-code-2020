@@ -45,4 +45,16 @@ fs.readFile("./data/input_day16.txt", "utf-8", (err, data) => {
     .split("\n")
     .map((ticket) => ticket.split(",").map((n) => Number(n)));
   console.log(rules);
+  let isValid = [];
+  for (let i = 0; i < rules.length; i++) {
+    isValid[i] = [];
+    for (let j = 0; j < rules.length; j++) {
+      isValid[i][j] = true;
+    }
+  }
+  for (let i = 0; i < rules.length; i++)
+    for (let j = 0; j < rules.length; j++) {
+      for (ticket of tickets) {
+      }
+    }
 });
