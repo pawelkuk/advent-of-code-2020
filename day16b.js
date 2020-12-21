@@ -44,7 +44,26 @@ fs.readFile("./data/input_day16.txt", "utf-8", (err, data) => {
   let tickets = otherTickets
     .split("\n")
     .map((ticket) => ticket.split(",").map((n) => Number(n)));
-  console.log(rules);
+  let reducedRules = reduceRules(rules);
+  console.log(reducedRules);
+  tickets = tickets.slice(1);
+  console.log(tickets.length);
+  tickets = tickets.filter((ticket) => {
+    for (n of ticket) {
+      if (
+        !(
+          (reducedRules.firstRange[0] <= n &&
+            n <= reducedRules.firstRange[1]) ||
+          (reducedRules.secondRange[0] <= n && n <= reducedRules.secondRange[1])
+        )
+      ) {
+        return false;
+      }
+    }
+    return true;
+  });
+  console.log(tickets.length);
+
   let isValid = [];
   for (let i = 0; i < rules.length; i++) {
     isValid[i] = [];
@@ -55,6 +74,18 @@ fs.readFile("./data/input_day16.txt", "utf-8", (err, data) => {
   for (let i = 0; i < rules.length; i++)
     for (let j = 0; j < rules.length; j++) {
       for (ticket of tickets) {
+        if (
+          !(
+            (rules[i].firstRange[0] <= ticket[j] &&
+              ticket[j] <= rules[i].firstRange[1]) ||
+            (rules[i].secondRange[0] <= ticket[j] &&
+              ticket[j] <= rules[i].secondRange[1])
+          )
+        ) {
+          isValid[i][j] = false;
+          break;
+        }
       }
     }
+  console.log(isValid.map((el) => el.reduce((a, b) => a + b, 0)));
 });
