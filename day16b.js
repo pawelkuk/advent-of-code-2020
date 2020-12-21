@@ -45,9 +45,7 @@ fs.readFile("./data/input_day16.txt", "utf-8", (err, data) => {
     .split("\n")
     .map((ticket) => ticket.split(",").map((n) => Number(n)));
   let reducedRules = reduceRules(rules);
-  console.log(reducedRules);
   tickets = tickets.slice(1);
-  console.log(tickets.length);
   tickets = tickets.filter((ticket) => {
     for (n of ticket) {
       if (
@@ -62,7 +60,6 @@ fs.readFile("./data/input_day16.txt", "utf-8", (err, data) => {
     }
     return true;
   });
-  console.log(tickets.length);
 
   let isValid = [];
   for (let i = 0; i < rules.length; i++) {
@@ -87,5 +84,27 @@ fs.readFile("./data/input_day16.txt", "utf-8", (err, data) => {
         }
       }
     }
-  console.log(isValid.map((el) => el.reduce((a, b) => a + b, 0)));
+  let sums = isValid.map((el) => el.reduce((a, b) => a + b, 0));
+  const dsu = sums
+    .map((item, index) => [index, item])
+    .sort(([, a], [, b]) => a - b);
+  mapping = [];
+  for ([rule] of dsu) {
+    [[, argmax]] = isValid[rule]
+      .map((el, idx) => [el, idx])
+      .filter((el) => el[0]);
+    mapping.push([rule, argmax]);
+    isValid = isValid.map((el) => {
+      el[argmax] = false;
+      return el;
+    });
+  }
+  myTicket = myTicket.split(",").map((n) => Number(n));
+  res = 1;
+  for ([rule, col] of mapping) {
+    if (rules[rule].field.startsWith("departure")) {
+      res *= myTicket[col];
+    }
+  }
+  console.log(res);
 });
