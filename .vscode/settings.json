@@ -1,9 +1,7 @@
 {
-    "cSpell.words": [
-        "argmax",
-        "bin",
-        "nums",
-        "rlen",
-        "vals"
-    ]
+  "cSpell.words": ["argmax", "bin", "nums", "rlen", "vals"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }
