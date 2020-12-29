@@ -1,6 +1,14 @@
 fs = require("fs");
 const tileSize = 10;
 
+function removeEdges(picture) {
+  return picture
+    .filter((line, idx) => ![0, 9].includes(idx % tileSize))
+    .map((line) =>
+      line.filter((line, idx) => ![0, 9].includes(idx % tileSize))
+    );
+}
+
 function match(t1, t2, side) {
   let row = null;
   if (side === "right")
@@ -278,5 +286,9 @@ fs.readFile("./data/input_day20.txt", "utf-8", (err, data) => {
     }
   }
   console.log(picture.map((line) => line.join("")).join("\n"));
+  console.log("");
+  const smallPic = removeEdges(picture);
+  console.log(smallPic.map((line) => line.join("")).join("\n"));
+  console.log(smallPic.length);
   // console.log(picture);
 });
