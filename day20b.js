@@ -1,6 +1,41 @@
 fs = require("fs");
 const tileSize = 10;
 
+function matchSeaMonster(pic, seaMonster) {
+  let n = 0;
+  let map = new Map();
+  for (let i = 0; i < pic.length - seaMonster.length; i++) {
+    for (let j = 0; j < pic[0].length - seaMonster[0].length; j++) {
+      let matched = true;
+
+      for (let k = 0; k < seaMonster.length; k++) {
+        for (let l = 0; l < seaMonster[0].length; l++) {
+          if (seaMonster[k][l] === " ") continue;
+          if (seaMonster[k][l] !== pic[i + k][j + l]) matched = false;
+        }
+      }
+      if (matched) {
+        for (let k = 0; k < seaMonster.length; k++) {
+          for (let l = 0; l < seaMonster[0].length; l++) {
+            if (seaMonster[k][l] === "#")
+              map.set([i + k, j + l].join(","), true);
+          }
+        }
+        n += 1;
+      }
+    }
+  }
+  let result = 0;
+  for (let i = 0; i < pic.length; i++) {
+    for (let j = 0; j < pic[0].length; j++) {
+      if (!map.has([i, j].join(","))) {
+        if (pic[i][j] === "#") result++;
+      }
+    }
+  }
+  return [n, result];
+}
+
 function removeEdges(picture) {
   return picture
     .filter((line, idx) => ![0, 9].includes(idx % tileSize))
@@ -17,8 +52,6 @@ function match(t1, t2, side) {
       .reverse()
       .join("");
   else if (side === "down") row = t1[t1.length - 1].join("");
-  // else if (side === "left") row = t1.map((line) => line[0]).join("");
-  // else if (side === "up") row = t1[0].join("");
   side = side === "down" ? "up" : side;
   for (conf of getAllConfigurations(t2, side))
     if (conf.row === row) {
@@ -28,32 +61,17 @@ function match(t1, t2, side) {
 }
 
 const matchSecondTile = (t1, t2) => {
-  // console.log(t1, t2);
-  // t2 = t2.map((line) => line.join(""));
   let right = match(t1, t2, "right");
   if (!!right) {
-    // console.log(`matched right ${right}`, "\n" + t2.join("\n"), "\n");
     let offset = [0, tileSize];
     return [offset, right, "right"];
   }
   let down = match(t1, t2, "down");
   if (!!down) {
-    // console.log(`matched down ${down}`, "\n" + t2.join("\n"), "\n");
     let offset = [tileSize, 0];
     return [offset, down, "down"];
   }
-  // let left = match(t1, t2, "left");
-  // if (!!left) {
-  //   console.log(`matched left ${left}`, "\n" + t2.join("\n"), "\n");
-  //   let offset = [0, -tileSize];
-  //   return [offset, left];
-  // }
-  // let up = match(t1, t2, "up");
-  // if (!!up) {
-  //   console.log(`matched up ${up}`, "\n" + t2.join("\n"), "\n");
-  //   let offset = [-tileSize, 0];
-  //   return [offset, up];
-  // }
+
   console.log("something wrong!!");
 };
 
@@ -96,11 +114,6 @@ function moveTo(orientation, tile, side) {
       resTile[i].push(0);
     }
   }
-  // console.log(tile.join("\n"), "\n");
-  // if (orientation.endsWith("flip")) {
-  //   tile = tile.map((line) => Array.from(line).reverse());
-  // }
-  // console.log(tile.map((el) => el.join("")).join("\n"), "\n");
 
   if (orientation.startsWith("0")) {
     for (let i = 0; i < tileSize; i++) {
@@ -130,10 +143,8 @@ function moveTo(orientation, tile, side) {
   if (orientation.endsWith("flip")) {
     if (side === "right") {
       resTile = resTile.reverse();
-      // console.log(side, "flipped");
     } else if (side === "down") {
       resTile = resTile.map((el) => el.reverse());
-      // console.log(side, "flipped");
     } else console.log("wrong flip");
   }
   return resTile;
@@ -175,10 +186,53 @@ const side2deg = {
   // left: 90,
   down: 180,
 };
+
+function getAllPicturesConf(smallPic) {
+  const res = [];
+  // no rotation
+  res.push(smallPic);
+  res.push(smallPic.map((el) => el.slice()).reverse());
+
+  // 90 deg clockwise rotation
+  let tmp = [];
+  for (let i = 0; i < smallPic.length; i++) {
+    tmp.push([]);
+    for (let j = 0; j < smallPic.length; j++) tmp[i].push(0);
+  }
+  for (let i = 0; i < smallPic.length; i++)
+    for (let j = 0; j < smallPic.length; j++)
+      tmp[i][j] = smallPic[smallPic.length - 1 - j][i];
+  res.push(tmp);
+  res.push(tmp.map((el) => el.slice()).reverse());
+  // 180 deg clockwise rotation
+  tmp = [];
+  for (let i = 0; i < smallPic.length; i++) {
+    tmp.push([]);
+    for (let j = 0; j < smallPic.length; j++) tmp[i].push(0);
+  }
+  for (let i = 0; i < smallPic.length; i++)
+    for (let j = 0; j < smallPic.length; j++)
+      tmp[i][j] = smallPic[smallPic.length - 1 - i][smallPic.length - 1 - j];
+  res.push(tmp);
+  res.push(tmp.map((el) => el.slice()).reverse());
+
+  // 270 deg clockwise (90 deg anticlockwise)
+  tmp = [];
+  for (let i = 0; i < smallPic.length; i++) {
+    tmp.push([]);
+    for (let j = 0; j < smallPic.length; j++) tmp[i].push(0);
+  }
+  for (let i = 0; i < smallPic.length; i++)
+    for (let j = 0; j < smallPic.length; j++)
+      tmp[i][j] = smallPic[j][smallPic.length - 1 - i];
+  res.push(tmp);
+  res.push(tmp.map((el) => el.slice()).reverse());
+
+  return res;
+}
 function getAllRotations(tile, side = "up") {
   const res = [];
   let incr = side2deg[side];
-  // console.log(((0 + incr) % 360).toString());
   // no rotation
   res.push({ row: tile[0], orientation: ((0 + incr) % 360).toString() });
 
@@ -199,6 +253,7 @@ function getAllRotations(tile, side = "up") {
   return res;
 }
 fs.readFile("./data/input_day20.txt", "utf-8", (err, data) => {
+  let seaMonster = fs.readFileSync("./data/input_day20b.txt", "utf-8");
   if (err) console.log(err);
   data = data.split("\n\n");
   tiles = data.map((d) => {
@@ -235,20 +290,17 @@ fs.readFile("./data/input_day20.txt", "utf-8", (err, data) => {
       finalRes *= tiles[i].id;
       for (let j = 0; j < cmpMatrix[i].length; j++) {
         if (cmpMatrix[i][j].match) {
-          console.log("i =", i, "j =", j, cmpMatrix[i][j]);
+          // console.log("i =", i, "j =", j, cmpMatrix[i][j]);
           tmp.push(cmpMatrix[i][j].orientations[0]);
         }
       }
       if (tmp.includes("180") && tmp.includes("270")) root = i;
-
-      console.log("\n");
     }
   }
-  console.log(root, cmpMatrix[root][root]);
-  console.log(finalRes);
+  // console.log(root, cmpMatrix[root][root]);
+  // console.log(finalRes);
 
   const pictureWidthHeight = Math.sqrt(tiles.length) * tileSize;
-  console.log(pictureWidthHeight);
   const picture = [];
   for (let i = 0; i < pictureWidthHeight; i++) {
     picture.push([]);
@@ -262,8 +314,6 @@ fs.readFile("./data/input_day20.txt", "utf-8", (err, data) => {
   const queue = [[root, currPos, currPos]];
   let firstTime = true;
   while (!!queue.length) {
-    // console.log("queue:", queue);
-
     let [tileIdx, prevPosition, currPosition] = queue.shift();
     if (ifPlaced.has(tileIdx)) continue;
 
@@ -275,20 +325,20 @@ fs.readFile("./data/input_day20.txt", "utf-8", (err, data) => {
       firstTime
     );
     firstTime = false;
-    // console.log(picture.map((line) => line.join("")).join("\n"));
     ifPlaced.set(tileIdx, true);
     for (let i = 0; i < cmpMatrix.length; i++) {
       let tileCmp = cmpMatrix[tileIdx][i];
       if (tileCmp.match) {
-        // console.log(i, tileCmp);
         queue.push([i, currPosition, newPosition]);
       }
     }
   }
-  console.log(picture.map((line) => line.join("")).join("\n"));
-  console.log("");
   const smallPic = removeEdges(picture);
   console.log(smallPic.map((line) => line.join("")).join("\n"));
-  console.log(smallPic.length);
-  // console.log(picture);
+  seaMonster = seaMonster.split("\n").map((el) => Array.from(el));
+  res = 0;
+  for (p of getAllPicturesConf(smallPic)) {
+    res = matchSeaMonster(p, seaMonster);
+    if (res[0] !== 0) console.log(res[1]);
+  }
 });
